@@ -184,7 +184,7 @@ print("Total Params:", FRmodel.count_params())
 # * In step 4, when summing over training examples, the result will be a single scalar value.
 # * For `tf.reduce_sum` to sum across all axes, keep the default value `axis=None`.
 
-# In[10]:
+# In[4]:
 
 # GRADED FUNCTION: triplet_loss
 
@@ -219,7 +219,7 @@ def triplet_loss(y_true, y_pred, alpha = 0.2):
     return loss
 
 
-# In[11]:
+# In[5]:
 
 with tf.Session() as test:
     tf.set_random_seed(1)
@@ -250,7 +250,7 @@ with tf.Session() as test:
 # 
 # FaceNet is trained by minimizing the triplet loss. But since training requires a lot of data and a lot of computation, we won't train it from scratch here. Instead, we load a previously trained model. Load a model using the following cell; this might take a couple of minutes to run. 
 
-# In[12]:
+# In[6]:
 
 FRmodel.compile(optimizer = 'adam', loss = triplet_loss, metrics = ['accuracy'])
 load_weights_from_FaceNet(FRmodel)
@@ -276,7 +276,7 @@ load_weights_from_FaceNet(FRmodel)
 # 
 # Run the following code to build the database (represented as a python dictionary). This database maps each person's name to a 128-dimensional encoding of their face.
 
-# In[13]:
+# In[7]:
 
 database = {}
 database["danielle"] = img_to_encoding("images/danielle.png", FRmodel)
@@ -308,7 +308,7 @@ database["arnaud"] = img_to_encoding("images/arnaud.jpg", FRmodel)
 # * `identity` is a string that is also a key in the `database` dictionary.
 # * `img_to_encoding` has two parameters: the `image_path` and `model`.
 
-# In[14]:
+# In[18]:
 
 # GRADED FUNCTION: verify
 
@@ -330,18 +330,18 @@ def verify(image_path, identity, database, model):
     ### START CODE HERE ###
     
     # Step 1: Compute the encoding for the image. Use img_to_encoding() see example above. (≈ 1 line)
-    encoding = img_to_encoding(image_path, FRmodel)
+    encoding = img_to_encoding(image_path, model)
     
     # Step 2: Compute distance with identity's image (≈ 1 line)
-    dist = np.linalg.norm(encoding - database[identity])
+    dist = np.linalg.norm(encoding - database[identity], ord=2)
     
     # Step 3: Open the door if dist < 0.7, else don't open (≈ 3 lines)
     if dist < 0.7:
         print("It's " + str(identity) + ", welcome in!")
-        door_open = None
+        door_open = True
     else:
         print("It's not " + str(identity) + ", please go away")
-        door_open = None
+        door_open = False
         
     ### END CODE HERE ###
         
@@ -352,7 +352,7 @@ def verify(image_path, identity, database, model):
 # 
 # <img src="images/camera_0.jpg" style="width:100px;height:100px;">
 
-# In[15]:
+# In[19]:
 
 verify("images/camera_0.jpg", "younes", database, FRmodel)
 
@@ -374,7 +374,7 @@ verify("images/camera_0.jpg", "younes", database, FRmodel)
 # Benoit, who does not work in the office, stole Kian's ID card and tried to enter the office. The camera took a picture of Benoit ("images/camera_2.jpg). Let's run the verification algorithm to check if benoit can enter.
 # <img src="images/camera_2.jpg" style="width:100px;height:100px;">
 
-# In[16]:
+# In[20]:
 
 verify("images/camera_2.jpg", "kian", database, FRmodel)
 
@@ -430,7 +430,7 @@ def who_is_it(image_path, database, model):
     ### START CODE HERE ### 
     
     ## Step 1: Compute the target "encoding" for the image. Use img_to_encoding() see example above. ## (≈ 1 line)
-    encoding = img_to_encoding(image_path, FRmodel)
+    encoding = img_to_encoding(image_path, model)
     
     ## Step 2: Find the closest encoding ##
     
@@ -441,7 +441,7 @@ def who_is_it(image_path, database, model):
     for (name, db_enc) in database.items():
         
         # Compute L2 distance between the target "encoding" and the current db_enc from the database. (≈ 1 line)
-        dist = np.linalg.norm(encoding - db_enc)
+        dist = np.linalg.norm(encoding - db_enc, ord=2)
 
         # If this distance is less than the min_dist, then set min_dist to dist, and identity to name. (≈ 3 lines)
         if dist < min_dist:
